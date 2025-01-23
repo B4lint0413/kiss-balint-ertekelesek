@@ -1,0 +1,562 @@
+openapi: "3.1.0"
+info:
+  title: Értékelések API
+  version: 1.0.0
+
+servers:
+  - url: http://backend.localhost
+    description: Localhost backend
+  - url: http://backend.vm1.test
+    description: VM1 backend
+  - url: http://backend.vm2.test
+    description: VM2 backend
+  - url: http://backend.vm3.test
+    description: VM3 backend
+  - url: http://backend.vm4.test
+    description: VM4 backend
+  - url: http://backend.vm5.test
+    description: VM5 backend
+
+paths:
+  /api/students:
+    get:
+      tags:
+       - Students
+      summary: Tanulók listájának lekérése
+      description: Az `index` visszaadja a tanulók adatait a minta szerint
+      responses:
+        '200':
+          description: Tanulók listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Student'
+              example:
+                data:
+                  - id: 1
+                    name: Nagy László
+                    class: 13_SZFT3
+                    birth: '2005-01-01'
+                    grades:
+                      - id: 1
+                        grade: '5'
+                        topic: Egyszerű kapcsolatok
+                        type: Dolgozat
+                        weight: 1.0
+                        subject:
+                          id: 1
+                          name: Backend programozás
+                          techer: Zobor Soma
+                      - id: 2
+                        grade: '4'
+                        topic: Pinia
+                        type: Beszámoló
+                        weight: 1.5
+                        subject:
+                          id: 2
+                          name: Frontend programozás
+                          techer: Csatár Dóra
+                  - id: 2
+                    name: Zobor Barnabás
+                    class: 11_SZFT2
+                    birth: '2005-01-01'
+                    grades:
+                      - id: 3
+                        grade: '5'
+                        topic: JavaScript alapok
+                        type: Dolgozat
+                        weight: 1.0
+                        subject:
+                          id: 3
+                          name: Webprogramozás
+                          techer: Takács Dorka
+                      - id: 4
+                        grade: '3'
+                        topic: Programozási tételek
+                        type: Házi feladat
+                        weight: 0.5
+                        subject:
+                          id: 4
+                          name: Asztali alkalmazások fejlesztése
+                          techer: Fodor György
+  /api/students/{student}:
+    get:
+      tags:
+       - Students
+      summary: Egy adott tanuló lekérése
+      description: A `show` a tanuló azonosítója alapján keresse meg a megfelelő rekordot, és adja vissza az adatokat a minta szerint
+      parameters:
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Egy adott tanuló
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Student'
+              example:
+                data:
+                  id: 1
+                  name: Nagy László
+                  class: 13_SZFT3
+                  birth: '2005-01-01'
+                  grades:
+                    - id: 1
+                      grade: '5'
+                      topic: Egyszerű kapcsolatok
+                      type: Dolgozat
+                      weight: 1.0
+                      subject:
+                        id: 1
+                        name: Backend programozás
+                        techer: Zobor Soma
+                    - id: 2
+                      grade: '4'
+                      topic: Pinia
+                      type: Beszámoló
+                      weight: 1.5
+                      subject:
+                        id: 2
+                        name: Frontend programozás
+                        techer: Csatár Dóra
+  /api/grades:
+    get:
+      tags:
+       - Grades
+      summary: Értékelések listájának
+      description: Az `index` visszaadja az értékelések adatait a minta szerint
+      responses:
+        '200':
+          description: Egy adott értékelés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Grade'
+              example:
+                data:
+                  - id: 1
+                    grade: '5'
+                    topic: Egyszerű kapcsolatok
+                    type: Dolgozat
+                    weight: 1.0
+                    student:
+                      id: 1
+                      name: Nagy László
+                      class: 13_SZFT3
+                      birth: '2005-01-01'
+                    subject:
+                      id: 1
+                      name: Backend programozás
+                      techer: Zobor Soma
+                  - id: 2
+                    grade: '4'
+                    topic: Pinia
+                    type: Beszámoló
+                    weight: 1.5
+                    student:
+                      id: 1
+                      name: Nagy László
+                      class: 13_SZFT3
+                      birth: '2005-01-01'
+                    subject:
+                      id: 2
+                      name: Frontend programozás
+                      techer: Csatár Dóra
+                  - id: 3
+                    grade: '3'
+                    topic: JavaScript alapok
+                    type: Dolgozat
+                    weight: 1.0
+                    student:
+                      id: 2
+                      name: Zobor Barnabás
+                      class: 11_SZFT2
+                      birth: '2005-01-01'
+                    subject:
+                      id: 3
+                      name: Webprogramozás
+                      techer: Takács Dorka
+    post:
+      tags:
+       - Grades
+      summary: Új értékelés létrehozása
+      description: A `store` feladata, hogy a JSON-ként kapott adatokat validálja, majd eltárolja az adatbázisba. A létrehozott új rekordot adja is vissza a minta szerint!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeInput'
+            example:
+              grade: '4'
+              topic: Órai munka
+              type: Órai munka
+              weight: 0.5
+              student_id: 1
+              subject_id: 1
+      responses:
+        '201':
+          description: Értékelés létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Grade'
+              example:
+                data:
+                  id: 5
+                  grade: '4'
+                  topic: Órai munka
+                  type: Órai munka
+                  weight: 0.5
+                  student:
+                    id: 1
+                    name: Nagy László
+                    class: 13_SZFT3
+                    birth: '2005-01-01'
+                  subject:
+                    id: 1
+                    name: Backend programozás
+                    techer: Zobor Soma
+        '422':
+          description: Érvénytelen adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+  /api/grades/{grade}:
+    get:
+      tags:
+       - Grades
+      summary: Egy adott értékelés lekérése
+      description: A `show` az értékelés azonosítója alapján keresse meg a megfelelő rekordot, és adja vissza az adatokat a minta szerint
+      parameters:
+        - name: grade
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Egy adott értékelés
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Grade'
+              example:
+                data:
+                  id: 1
+                  grade: '5'
+                  topic: Egyszerű kapcsolatok
+                  type: Dolgozat
+                  weight: 1.0
+                  student:
+                    id: 1
+                    name: Nagy László
+                    class: 13_SZFT3
+                    birth: '2005-01-01'
+                  subject:
+                    id: 1
+                    name: Backend programozás
+                    techer: Zobor Soma
+    put:
+      tags:
+       - Grades
+      summary: Egy adott értékelés frissítése
+      description: Az `update` feladata, hogy a JSON-ként kapott adatokat validálja, majd tejes egészében cserélje le az adatbázisban található adatokat. A módosított rekordot adja is vissza a minta szerint!
+      parameters:
+        - name: grade
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeInput'
+            example:
+              grade: '5'
+              topic: 1:1 1:N kapcsolatok
+              type: Dolgozat
+              weight: 1.0
+              student_id: 1
+              subject_id: 1
+      responses:
+        '200':
+          description: Értékelés frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Grade'
+              example:
+                data:
+                  id: 1
+                  grade: '5'
+                  topic: 1:1 1:N kapcsolatok
+                  type: Dolgozat
+                  weight: 1.0
+                  student:
+                    id: 1
+                    name: Nagy László
+                    class: 13_SZFT3
+                    birth: '2005-01-01'
+                  subject:
+                    id: 1
+                    name: Backend programozás
+                    techer: Zobor Soma
+        '422':
+          description: Érvénytelen adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+    delete:
+      tags:
+       - Grades
+      summary: Egy adott értékelés törlése
+      description: A `destroy` törölje ki a megfelelő rekordot az adatbázisból az azonosító alapján.
+      parameters:
+        - name: grade
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Értékelés törölve
+        '404':
+          description: Nem található a keresett elem
+        '500':
+          description: Szerver hiba
+  /api/subjects:
+    get:
+      tags:
+       - Subjects
+      summary: Tantárgyak listájának lekérése
+      description: Az `index` visszaadja a tantárgyak adatait a minta szerint.
+      responses:
+        '200':
+          description: Tantárgyak listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subject'
+              example:
+                data:
+                  - id: 1
+                    name: Backend programozás
+                    teacher: Zobor Soma
+                    grades:
+                      - id: 1
+                        grade: '5'
+                        topic: Egyszerű kapcsolatok
+                        type: Dolgozat
+                        weight: 1.0
+                        student:
+                          id: 1
+                          name: Nagy László
+                          class: 13_SZFT3
+                          birth: '2005-01-01'
+                      - id: 5
+                        grade: '4'
+                        topic: Órai munka
+                        type: Órai munka
+                        weight: 0.5
+                        student:
+                          id: 1
+                          name: Nagy László
+                          class: 13_SZFT3
+                          birth: '2005-01-01'
+                  - id: 1
+                    name: Frontend programozás
+                    teacher: Csatár Dóra
+                    grades:
+                      - id: 2
+                        grade: '4'
+                        topic: Pinia
+                        type: Házi feladat
+                        weight: 0.5
+                        student:
+                          id: 1
+                          name: Nagy László
+                          class: 13_SZFT3
+                          birth: '2005-01-01'
+                      - id: 6
+                        grade: '-'
+                        topic: Vue Router
+                        type: Dolgozat
+                        weight: 1.0
+                        student:
+                          id: 5
+                          name: Pál Szimonetta
+                          class: 13_SZFT3
+                          birth: '2005-01-01'
+  /api/subjects/{subject}:
+    get:
+      tags:
+       - Subjects
+      summary: Egy adott tantárgy lekérése
+      description: A `show` a tantárgy azonosítója alapján keresse meg a megfelelő rekordot, és adja vissza az adatokat a minta szerint.
+      parameters:
+        - name: subject
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Egy adott tantárgy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Subject'
+              example:
+                id: 1
+                name: Backend programozás
+                teacher: Zobor Soma
+                grades:
+                  - id: 1
+                    grade: '5'
+                    topic: Egyszerű kapcsolatok
+                    type: Dolgozat
+                    weight: 1.0
+                    student:
+                      id: 1
+                      name: Nagy László
+                      class: 13_SZFT3
+                      birth: '2005-01-01'
+                  - id: 5
+                    grade: '4'
+                    topic: Órai munka
+                    type: Órai munka
+                    weight: 0.5
+                    student:
+                      id: 1
+                      name: Nagy László
+                      class: 13_SZFT3
+                      birth: '2005-01-01'
+components:
+  schemas:
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 20
+        class:
+          type: string
+          maxLength: 10
+        birth:
+          type: string
+          format: date
+        grades:
+          type: array
+          items:
+            $ref: '#/components/schemas/Grade'
+    Grade:
+      type: object
+      properties:
+        id:
+          type: integer
+        grade:
+          type: string
+          maxLength: 2
+        topic:
+          type: string
+          maxLength: 20
+        type:
+          type: string
+          maxLength: 20
+        weight:
+          type: number
+          format: float
+        student:
+          $ref: '#/components/schemas/Student'
+        subject:
+          $ref: '#/components/schemas/Subject'
+    GradeInput:
+      type: object
+      properties:
+        id:
+          type: integer
+        grade:
+          type: string
+          maxLength: 2
+        topic:
+          type: string
+          maxLength: 20
+        type:
+          type: string
+          maxLength: 20
+        weight:
+          type: number
+          format: float
+        student_id:
+          type: integer
+        subject_id:
+          type: integer
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: varchar
+          maxLength: 50
+        teacher:
+          type: varchar
+          maxLength: 20
+        grades:
+          type: array
+          items:
+            $ref: '#/components/schemas/Grade'
+
+    
+
+
+        
