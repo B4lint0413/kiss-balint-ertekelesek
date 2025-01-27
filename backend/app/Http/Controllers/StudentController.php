@@ -6,15 +6,22 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Http\Resources\StudentResource;
 use App\Models\Student;
+use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return StudentResource::collection(Student::with(['grades', 'grades.subject'])->get());
+        $students = Student::with(['grades', 'grades.subject'])->get();
+        if ($request->query('format') == 'pdf') {
+            $mpdf = new \Mpdf\Mpdf();
+            $mpdf->WriteHTML(view('content', ['students' => $students]));
+            return $mpdf->Output();
+        }
+        return StudentResource::collection($students);
     }
 
     /**
